@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 import time
+from dataclasses import dataclass
 from pynput.keyboard import Controller
 from HandTrackingModule import handDetector
 # from cvzone import cornerRect
@@ -38,8 +39,10 @@ def cornerRect(img, bbox, l=30, t=5, rt=1,
 
 
 cap = cv.VideoCapture(0)
-cap.set(cv.CAP_PROP_FRAME_WIDTH, 1280)
-cap.set(cv.CAP_PROP_FRAME_HEIGHT, 720)
+# cap.set(cv.CAP_PROP_FRAME_WIDTH, 1280)
+# cap.set(cv.CAP_PROP_FRAME_HEIGHT, 720)
+assert cap.get(cv.CAP_PROP_FRAME_WIDTH) == 640
+assert cap.get(cv.CAP_PROP_FRAME_HEIGHT) == 480
 
 detector = handDetector(detectionCon=0.8)
 keys = (("Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"),
@@ -48,6 +51,7 @@ keys = (("Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"),
         ("<", " "))
 finalText = ""
 keyboard = Controller()
+DX, DY = 0, 40
 
 
 def drawALL(img, buttonList):
@@ -57,7 +61,7 @@ def drawALL(img, buttonList):
         w, h = button.size
         cornerRect(imgNew, (x, y, w, h), 20, rt=0)
         cv.rectangle(imgNew, button.pos, (x + w, y + h), (255, 0, 255), cv.FILLED)
-        cv.putText(imgNew, button.text, (x + 20, y + 65), cv.FONT_HERSHEY_PLAIN, 4, (255, 255, 255), 4)
+        cv.putText(imgNew, button.text, (x + DX, y + DY), cv.FONT_HERSHEY_PLAIN, 4, (255, 255, 255), 4)
     out = img.copy()
     alpha = 0.5
     mask = imgNew.astype(bool)
@@ -65,17 +69,17 @@ def drawALL(img, buttonList):
     return out
 
 
-class Button():
-    def __init__(self, pos, text, size=[85, 85]):
-        self.pos = pos
-        self.size = size
-        self.text = text
+@dataclass
+class Button:
+    pos: list
+    text: str
+    size: list
 
 
 buttonList = []
 for i in range(len(keys)):
     for j, key in enumerate(keys[i]):
-        buttonList.append(Button([100 * j + 50, 100 * i + 50], key))
+        buttonList.append(Button([100//2 * j + 50, 100//2 * i + 50], key, [85//2, 85//2]))
 
 while cap.isOpened():
     _, img = cap.read()
@@ -92,13 +96,13 @@ while cap.isOpened():
 
             if x < lmList[8][1] < x + w and y < lmList[8][2] < y + h:
                 cv.rectangle(img, button.pos, (x + w, y + h), (175, 0, 175), cv.FILLED)
-                cv.putText(img, button.text, (x + 20, y + 65), cv.FONT_HERSHEY_PLAIN, 4, (255, 255, 255), 4)
+                cv.putText(img, button.text, (x + DX, y + DY), cv.FONT_HERSHEY_PLAIN, 4, (255, 255, 255), 4)
                 l, _, _ =  detector.findDistance(8, 12, img, draw=False)
 
                 ## when clicked
                 if l < 40:
                     cv.rectangle(img, button.pos, (x + w, y + h), (0, 255, 0), cv.FILLED)
-                    cv.putText(img, button.text, (x + 20, y + 65), cv.FONT_HERSHEY_PLAIN, 4, (255, 255, 255), 4)
+                    cv.putText(img, button.text, (x + DX, y + DY), cv.FONT_HERSHEY_PLAIN, 4, (255, 255, 255), 4)
                     if button.text == "<":
                         finalText = finalText[:-1]
                         keyboard.press('\010')
@@ -107,8 +111,8 @@ while cap.isOpened():
                         keyboard.press(button.text)
                     time.sleep(0.15)
 
-    cv.rectangle(img, (50, 710), (700, 610), (175, 0, 175), cv.FILLED)
-    cv.putText(img, finalText, (60, 690), cv.FONT_HERSHEY_PLAIN, 5, (255, 255, 255), 5)
+    cv.rectangle(img, (50, 710//2), (700//3*2, 610//2), (175, 0, 175), cv.FILLED)
+    cv.putText(img, finalText, (60, 690//2), cv.FONT_HERSHEY_PLAIN, 5, (255, 255, 255), 5)
                           
     cv.imshow("Keyboard", img)
     key = cv.waitKey(1) & 0xFF
