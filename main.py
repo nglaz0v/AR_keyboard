@@ -1,9 +1,40 @@
 import cv2 as cv
 import numpy as np
 import time
-import cvzone
 from pynput.keyboard import Controller
 from HandTrackingModule import handDetector
+# from cvzone import cornerRect
+
+
+def cornerRect(img, bbox, l=30, t=5, rt=1,
+               colorR=(255, 0, 255), colorC=(0, 255, 0)):
+    """
+    :param img: Image to draw on.
+    :param bbox: Bounding box [x, y, w, h]
+    :param l: length of the corner line
+    :param t: thickness of the corner line
+    :param rt: thickness of the rectangle
+    :param colorR: Color of the Rectangle
+    :param colorC: Color of the Corners
+    :return:
+    """
+    x, y, w, h = bbox
+    x1, y1 = x + w, y + h
+    if rt != 0:
+        cv.rectangle(img, bbox, colorR, rt)
+    # Top Left  x,y
+    cv.line(img, (x, y), (x + l, y), colorC, t)
+    cv.line(img, (x, y), (x, y + l), colorC, t)
+    # Top Right  x1,y
+    cv.line(img, (x1, y), (x1 - l, y), colorC, t)
+    cv.line(img, (x1, y), (x1, y + l), colorC, t)
+    # Bottom Left  x,y1
+    cv.line(img, (x, y1), (x + l, y1), colorC, t)
+    cv.line(img, (x, y1), (x, y1 - l), colorC, t)
+    # Bottom Right  x1,y1
+    cv.line(img, (x1, y1), (x1 - l, y1), colorC, t)
+    cv.line(img, (x1, y1), (x1, y1 - l), colorC, t)
+    return img
 
 
 cap = cv.VideoCapture(0)
@@ -24,7 +55,7 @@ def drawALL(img, buttonList):
     for button in buttonList:
         x, y = button.pos
         w, h = button.size
-        cvzone.cornerRect(imgNew, (x, y, w, h), 20, rt=0)
+        cornerRect(imgNew, (x, y, w, h), 20, rt=0)
         cv.rectangle(imgNew, button.pos, (x + w, y + h), (255, 0, 255), cv.FILLED)
         cv.putText(imgNew, button.text, (x + 20, y + 65), cv.FONT_HERSHEY_PLAIN, 4, (255, 255, 255), 4)
     out = img.copy()
