@@ -1,9 +1,9 @@
 import cv2 as cv
 import numpy as np
-import time
+import pyautogui as gui
 from dataclasses import dataclass
-from pynput.keyboard import Controller
-from HandTrackingModule import handDetector
+from HandTrackingModule import HandDetector
+# from pynput.keyboard import Controller
 # from cvzone import cornerRect
 
 
@@ -44,13 +44,13 @@ cap = cv.VideoCapture(0)
 assert cap.get(cv.CAP_PROP_FRAME_WIDTH) == 640
 assert cap.get(cv.CAP_PROP_FRAME_HEIGHT) == 480
 
-detector = handDetector(detectionCon=0.8)
+detector = HandDetector(detectionCon=0.8)
 keys = (("Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"),
         ("A", "S", "D", "F", "G", "H", "J", "K", "L", ";"),
         ("Z", "X", "C", "V", "B", "N", "M", ",", ".", "/"),
         ("<", " "))
 finalText = ""
-keyboard = Controller()
+# gui = Controller()
 DX, DY = 0, 40
 
 
@@ -105,11 +105,11 @@ while cap.isOpened():
                     cv.putText(img, button.text, (x + DX, y + DY), cv.FONT_HERSHEY_PLAIN, 4, (255, 255, 255), 4)
                     if button.text == "<":
                         finalText = finalText[:-1]
-                        keyboard.press('\010')
+                        gui.press('\010')
                     else:
                         finalText += button.text
-                        keyboard.press(button.text)
-                    time.sleep(0.15)
+                        gui.press(button.text)
+                    gui.sleep(0.15)
 
     cv.rectangle(img, (50, 710//2), (700//3*2, 610//2), (175, 0, 175), cv.FILLED)
     cv.putText(img, finalText, (60, 690//2), cv.FONT_HERSHEY_PLAIN, 5, (255, 255, 255), 5)

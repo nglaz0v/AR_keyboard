@@ -1,5 +1,6 @@
 opencv-python
 mediapipe
 numpy
+PyAutoGUI
 #cvzone
-pynput
+#pynput
